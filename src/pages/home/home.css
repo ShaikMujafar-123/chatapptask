@@ -1,15 +1,12 @@
-/* chatStyles.css */
 
-/* Chat App Container */
 .chat-app {
   display: flex;
-  height: 97vh;
+  height: 100vh;
 }
 
-/* User List */
 .user-list {
   flex: 1;
-  background-color: #f0f0f0;
+  /* background-color: #f0f0f0; */
   padding: 20px;
 }
 
@@ -26,15 +23,15 @@
 .user-list li {
   cursor: pointer;
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 35px;
   margin-bottom: 10px;
 }
 
-.user-list li.active {
-  background-color: #e5e5e5;
-}
+/* .user-list li.active {
+  background-color: #c1e1ff;
+} */
 
-/* Chat Area */
+
 .chat-area {
   flex: 3;
   display: flex;
@@ -70,18 +67,20 @@
   padding: 10px;
   border-radius: 8px;
   margin-bottom: 10px;
-  max-width: 15%;
+ 
 }
 
-.sent {
+/* .sent {
   background-color: #dcf8c6;
   align-self: flex-end;
+  text-align: end;
+  
 }
 
 .received {
   background-color: #fff;
   align-self: flex-start;
-}
+} */
 
 .message span {
   font-size: 12px;
