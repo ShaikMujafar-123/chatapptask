@@ -12,19 +12,23 @@ const Chat = () => {
   const [selectedGroupUsers, setSelectedGroupUsers] = useState([]);
   const [groupname, setGroupName] = useState("");
   const [groupMessages, setGroupMessages] = useState([]);
-  
-  console.log(selectedGroupUsers,"selectedGroupUsers")
+
+  console.log(selectedGroupUsers, "selectedGroupUsers");
 
   useEffect(() => {
+    //Take User From Local storage To display like Contacts
     const storedUsers = JSON.parse(localStorage.getItem("Users")) || [];
     setUsers(storedUsers);
+    // Taking Messages From LOcal stoarge for person to person
     const localstorageMessages =
       JSON.parse(localStorage.getItem("Messages")) || [];
     setMessages(localstorageMessages);
+    // Taking Messages From LOcal stoarge for Group
     const localstoreGroupMessages =
       JSON.parse(localStorage.getItem("Groupmessages")) || [];
     setGroupMessages(localstoreGroupMessages);
 
+    // value for Initially when user login
     const userWithoutLogin = storedUsers.find(
       (user) => user.login_status !== "login"
     );
@@ -32,35 +36,32 @@ const Chat = () => {
       setSelectedUser(userWithoutLogin);
     }
   }, []);
-
+  // Contacts Selected to display or filter mesages
   const handleUserClick = (user) => {
     setSelectedUser(user);
   };
-
+  // pop close or open
   const toggleGroupModal = () => {
     setShowGroupModal(!showGroupModal);
   };
-
+  // Adding Members  in Group chats
   const toggleUserSelection = (user) => {
     setSelectedGroupUsers((prevSelectedUsers) => {
       if (prevSelectedUsers.includes(user.username)) {
-        console.log(prevSelectedUsers,"prevSelectedUsers")
-        return  prevSelectedUsers;
+        return prevSelectedUsers.filter(
+          (username) => username === user.username
+        );
       } else {
-        return [...prevSelectedUsers, user.username];
+        return [loggedInUser.username, ...prevSelectedUsers, user.username];
       }
     });
-    
   };
-  // console.log(selectedUser, "selectedUser");
-
-  // console.log(toggleUserSelection,"toggleUserSelection")
-
+  // Create Groups and store Group Name and Members of the Group
   const handleCreateGroup = () => {
     const groupExists = groupMessages.some(
       (group) => group.groupName === groupname
     );
-  
+
     if (groupExists) {
       alert("A group with the same name already exists.");
       return;
@@ -75,12 +76,11 @@ const Chat = () => {
     toggleGroupModal();
     setGroupName("");
   };
-
+  // storing send MessAGES of based upon the SelectedUser
   const handleSendMessage = () => {
     const loggedInUser = users.find((user) => user.login_status === "login");
-
+    // Storing Group Chats in Local storage as key "Groupmessages" after user clicks on SEND button
     if (selectedUser.members) {
-      // console.log("IFFFF");
       const groupChat = {
         messages: [
           {
@@ -99,7 +99,7 @@ const Chat = () => {
         JSON.stringify(updatedGroupMessages)
       );
     } else {
-      // console.log("ELSE");
+      // Storing individual  Chats in Local storage as key "Messages" after user  clicks on SEND button
       const chatMessage = {
         sender: loggedInUser.username,
         receiver: selectedUser.username,
@@ -113,7 +113,7 @@ const Chat = () => {
 
     setMessageInput("");
   };
-
+  // handle Logout and Login
   const handleLogout = () => {
     const updatedLocalData = users.map((userData) =>
       userData.login_status === "login"
@@ -127,11 +127,8 @@ const Chat = () => {
   };
 
   // Find the currently logged-in user
-  // console.log(groupMessages, "groupMessages");
-
   const loggedInUser = users.find((user) => user.login_status === "login");
-  // console.log(loggedInUser, "loggedInUser");
-  // Define filteredMessages based on the logged in user and selected user
+  // Filtering Messages for Individual persons
   const filteredMessages = messages.filter(
     (message) =>
       (message.sender === loggedInUser?.username &&
@@ -139,7 +136,7 @@ const Chat = () => {
       (message.sender === selectedUser?.username &&
         message.receiver === loggedInUser?.username)
   );
-
+  // Filtering Messages for Groups
   const filteredGroupMessages = groupMessages.filter((group) => {
     if (group.messages) {
       return group.messages.some((message) => {
@@ -151,14 +148,12 @@ const Chat = () => {
         );
       });
     }
-    return false; // Filter out groups without messages
+    return false;
   });
-
-  // console.log(filteredGroupMessages, "filteredGroupMessages");
 
   return (
     <div className="chat-app">
-      {/* User list */}
+      {/* Contacts ------  User list */}
       <div className="user-list">
         <div className="user-list-header">
           <h2>Contacts</h2>
@@ -182,6 +177,7 @@ const Chat = () => {
               </li>
             ))}
         </ul>
+        {/* display Groups name  */}
         <div>Groups</div>
         {groupMessages
           .filter(
@@ -198,7 +194,10 @@ const Chat = () => {
               }
             >
               <p
-                style={{cursor: "pointer",padding: "10px",borderRadius: "35px",
+                style={{
+                  cursor: "pointer",
+                  padding: "10px",
+                  borderRadius: "35px",
                   backgroundColor:
                     selectedUser && group.groupName === selectedUser.groupName
                       ? "#e5ebf3"
@@ -211,13 +210,18 @@ const Chat = () => {
             </div>
           ))}
       </div>
-
+      {/* pop for asking user to select no of users in group */}
       {showGroupModal && (
         <div className="group-modal">
           <h2>Select Users for Group Chat</h2>
           <ul>
             {users.map((user) => (
-              <li style={{cursor:"pointer",paddingBottom : "5px"}}
+              <li
+                style={{
+                  cursor: "pointer",
+                  paddingBottom: "5px",
+                  listStyle: "none",
+                }}
                 key={user.email}
                 onClick={() => toggleUserSelection(user)}
                 className={selectedGroupUsers.includes(user) ? "selected" : ""}
@@ -226,13 +230,23 @@ const Chat = () => {
               </li>
             ))}
           </ul>
+          {/* taking group name  */}
           <input
             type="text"
             value={groupname}
             onChange={(e) => setGroupName(e.target.value)}
             placeholder="Group Name...."
+            required
           />
-          <button onClick={() => handleCreateGroup(selectedGroupUsers)}>
+          <button
+            onClick={() => {
+              if (groupname.trim() !== "") {
+                handleCreateGroup(selectedGroupUsers);
+              } else {
+                alert("Please provide a valid group name.");
+              }
+            }}
+          >
             Create Group
           </button>
           <button onClick={toggleGroupModal}>Cancel</button>
@@ -253,6 +267,7 @@ const Chat = () => {
 
         <div className="message-list">
           <div className="messages-container">
+            {/* individual messages taking messages from filteredMessages */}
             {selectedUser &&
               filteredMessages.map((message, index) => (
                 <div
@@ -275,6 +290,7 @@ const Chat = () => {
                 </div>
               ))}
             <div>
+              {/* individual Group messages  taking messages from filteredGroupMessages */}
               {filteredGroupMessages.map((group, groupIndex) => (
                 <div key={groupIndex}>
                   {group.messages.map((message, messageIndex) => (
@@ -297,6 +313,7 @@ const Chat = () => {
             </div>
           </div>
         </div>
+        {/* message input  */}
 
         <div className="message-input">
           <input
