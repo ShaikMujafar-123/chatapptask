@@ -52,7 +52,7 @@ const Chat = () => {
           (username) => username === user.username
         );
       } else {
-        return [loggedInUser.username, ...prevSelectedUsers, user.username];
+        return [ ...prevSelectedUsers, user.username];
       }
     });
   };
@@ -214,6 +214,7 @@ const Chat = () => {
       {showGroupModal && (
         <div className="group-modal">
           <h2>Select Users for Group Chat</h2>
+          <div >Please Select login user also From below</div>
           <ul>
             {users.map((user) => (
               <li
