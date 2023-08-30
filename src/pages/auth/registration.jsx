@@ -182,6 +182,7 @@ const Registration = () => {
             type="date"
             name="dateOfBirth"
             value={dateOfBirth}
+            max="2020-12-31"
             onChange={changeHandler}
             required
           />

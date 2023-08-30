@@ -44,21 +44,9 @@ const Chat = () => {
   const toggleGroupModal = () => {
     setShowGroupModal(!showGroupModal);
   };
-  // Adding Members  in Group chats
-  const toggleUserSelection = (user) => {
-    setSelectedGroupUsers((prevSelectedUsers) => {
-      if (prevSelectedUsers.includes(user.username)) {
-        return prevSelectedUsers.filter(
-          (username) => username === user.username
-        );
-      } else {
-        return [ ...prevSelectedUsers, user.username];
-      }
-    });
-  };
   // Create Groups and store Group Name and Members of the Group
   const handleCreateGroup = () => {
-    const groupExists = groupMessages.some(
+    const groupExists = groupMessages.find(
       (group) => group.groupName === groupname
     );
 
@@ -68,7 +56,9 @@ const Chat = () => {
     }
     const newGroup = {
       groupName: groupname,
-      members: selectedGroupUsers,
+      admin: loggedInUser.username,
+      users: users.map((user) => user.username),
+      grpMessages: [],
     };
     const updatedGroupMessages = [...groupMessages, newGroup];
     setGroupMessages(updatedGroupMessages);
@@ -77,42 +67,46 @@ const Chat = () => {
     setGroupName("");
   };
   // storing send MessAGES of based upon the SelectedUser
+  console.log(selectedUser, "selectedddddd");
   const handleSendMessage = () => {
     const loggedInUser = users.find((user) => user.login_status === "login");
-    // Storing Group Chats in Local storage as key "Groupmessages" after user clicks on SEND button
-    if (selectedUser.members) {
-      const groupChat = {
-        messages: [
-          {
-            groupName: selectedUser.groupName,
-            sender: loggedInUser.username,
-            receiver: selectedUser.members,
-            content: messageInput,
-            timestamp: new Date().toLocaleString(),
-          },
-        ],
+
+    if (selectedUser.users) {
+      const newMessage = {
+        sender: loggedInUser.username,
+        content: messageInput,
+        timestamp: new Date().toLocaleString(),
       };
-      const updatedGroupMessages = [...groupMessages, groupChat];
+      const updatedGroupMessages = groupMessages.map((group) => {
+        if (group.groupName === selectedUser.groupName) {
+          return {
+            ...group,
+            grpMessages: [...group.grpMessages, newMessage],
+          };
+        }
+        return group;
+      });
+
       setGroupMessages(updatedGroupMessages);
       localStorage.setItem(
         "Groupmessages",
         JSON.stringify(updatedGroupMessages)
       );
     } else {
-      // Storing individual  Chats in Local storage as key "Messages" after user  clicks on SEND button
-      const chatMessage = {
+      const newMessage = {
         sender: loggedInUser.username,
         receiver: selectedUser.username,
         content: messageInput,
         timestamp: new Date().toLocaleString(),
       };
-      const updatedMessages = [...messages, chatMessage];
+      const updatedMessages = [...messages, newMessage];
       setMessages(updatedMessages);
       localStorage.setItem("Messages", JSON.stringify(updatedMessages));
     }
 
     setMessageInput("");
   };
+
   // handle Logout and Login
   const handleLogout = () => {
     const updatedLocalData = users.map((userData) =>
@@ -136,20 +130,14 @@ const Chat = () => {
       (message.sender === selectedUser?.username &&
         message.receiver === loggedInUser?.username)
   );
+  console.log(loggedInUser?.username);
   // Filtering Messages for Groups
-  const filteredGroupMessages = groupMessages.filter((group) => {
-    if (group.messages) {
-      return group.messages.some((message) => {
-        return (
-          message.groupName === selectedUser?.groupName &&
-          message.receiver.some((receiver) =>
-            selectedUser.members.includes(receiver)
-          )
-        );
-      });
-    }
-    return false;
-  });
+  const filteredGroupMessages = groupMessages.filter(
+    (group) =>
+      group.groupName === selectedUser?.groupName &&
+      group.users.includes(loggedInUser.username)
+  );
+  console.log("filteredGroupMessages", filteredGroupMessages);
 
   return (
     <div className="chat-app">
@@ -180,15 +168,12 @@ const Chat = () => {
         {/* display Groups name  */}
         <div>Groups</div>
         {groupMessages
-          .filter(
-            (group) =>
-              group.groupName && group.members.includes(loggedInUser.username)
-          )
+          .filter((group) => group.users.includes(loggedInUser.username))
           .map((group, groupIndex) => (
             <div
               key={groupIndex}
               className={
-                selectedUser && group.groupName === selectedUser.groupName
+                group.groupName === selectedUser.groupName
                   ? "active-group"
                   : "group"
               }
@@ -213,24 +198,6 @@ const Chat = () => {
       {/* pop for asking user to select no of users in group */}
       {showGroupModal && (
         <div className="group-modal">
-          <h2>Select Users for Group Chat</h2>
-          <div >Please Select login user also From below</div>
-          <ul>
-            {users.map((user) => (
-              <li
-                style={{
-                  cursor: "pointer",
-                  paddingBottom: "5px",
-                  listStyle: "none",
-                }}
-                key={user.email}
-                onClick={() => toggleUserSelection(user)}
-                className={selectedGroupUsers.includes(user) ? "selected" : ""}
-              >
-                {user.username}
-              </li>
-            ))}
-          </ul>
           {/* taking group name  */}
           <input
             type="text"
@@ -295,19 +262,11 @@ const Chat = () => {
               {/* individual Group messages  taking messages from filteredGroupMessages */}
               {filteredGroupMessages.map((group, groupIndex) => (
                 <div key={groupIndex}>
-                  {group.messages.map((message, messageIndex) => (
-                    <div key={messageIndex}>
-                      <span style={{ fontSize: "15px", color: "darkgrey" }}>
-                        {message.sender === loggedInUser?.username ? (
-                          <p>You</p>
-                        ) : (
-                          <p>{message.sender}</p>
-                        )}
-                      </span>
+                  {group.grpMessages.map((message, messageIndex) => (
+                    <div key={messageIndex} className="message">
+                      <span>{message.sender}</span>
                       <p>{message.content}</p>
-                      <span style={{ fontSize: "13px", color: "darkgray" }}>
-                        {message.timestamp}
-                      </span>
+                      <span>{message.timestamp}</span>
                     </div>
                   ))}
                 </div>
