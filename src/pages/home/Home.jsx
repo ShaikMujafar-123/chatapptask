@@ -239,6 +239,7 @@ const Chat = () => {
             placeholder="Group Name...."
             required
           />
+          <div>{selectedGroupUsers}</div>
           <button
             onClick={() => {
               if (groupname.trim() !== "") {
