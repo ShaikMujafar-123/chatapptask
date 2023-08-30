@@ -57,6 +57,7 @@ const Chat = () => {
     const newGroup = {
       groupName: groupname,
       admin: loggedInUser.username,
+      created : new Date().toLocaleString(),
       users: users.map((user) => user.username),
       grpMessages: [],
     };
