@@ -57,7 +57,7 @@ const Chat = () => {
     const newGroup = {
       groupName: groupname,
       admin: loggedInUser.username,
-      created : new Date().toLocaleString(),
+      created: new Date().toLocaleString(),
       users: users.map((user) => user.username),
       grpMessages: [],
     };
@@ -162,6 +162,7 @@ const Chat = () => {
                 }
                 onClick={() => handleUserClick(user)}
               >
+                
                 {user.username}
               </li>
             ))}
@@ -261,17 +262,45 @@ const Chat = () => {
               ))}
             <div>
               {/* individual Group messages  taking messages from filteredGroupMessages */}
-              {filteredGroupMessages.map((group, groupIndex) => (
-                <div key={groupIndex}>
-                  {group.grpMessages.map((message, messageIndex) => (
-                    <div key={messageIndex} className="message">
-                      <span>{message.sender}</span>
-                      <p>{message.content}</p>
-                      <span>{message.timestamp}</span>
+
+              
+                {/* individual messages taking messages from filteredGroupMessages */}
+                <div className="messages-container">
+                  {/* individual messages taking messages from filteredGroupMessages */}
+                  {filteredGroupMessages.map((group, groupIndex) => (
+                    <div key={groupIndex} className="message-group">
+                      {group.grpMessages.map((message, messageIndex) => (
+                        <div
+                          key={messageIndex}
+                          className={`message-container ${
+                            message.sender === loggedInUser?.username
+                              ? "sent"
+                              : "received"
+                          }`}
+                        >
+                          <div
+                            className={`message ${
+                              message.sender === loggedInUser?.username
+                                ? "sent"
+                                : "received"
+                            }`}
+                          >
+                            <span style={{ fontSize: "15px" }}>
+                    {message.sender === loggedInUser?.username ? (
+                      <p>You</p>
+                    ) : (
+                      <p>{message.sender}</p>
+                    )}
+                  </span>
+                            <p>{message.content}</p>
+                            <span>{message.timestamp}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
-              ))}
+              
             </div>
           </div>
         </div>
